@@ -1,7 +1,9 @@
 import allure
 import requests
-from config import Urls, Handlers
-from helpers import Helper
+from urls import Urls, Handlers
+from config import headers_json
+from data import UserData, LoginResponses
+
 
 @allure.suite('Логин пользователя')
 class TestLoginUser:
@@ -13,18 +15,28 @@ class TestLoginUser:
             "email": user_data["email"],
             "password": user_data["password"]
         }
-        response = requests.post(Urls.MAIN_URL + Handlers.LOGIN,json=login_payload,headers=Handlers.headers_json)
 
-        assert response.status_code == 200
-        body = response.json()
-        assert body.get("success") == True
+        with allure.step("Отправка POST-запроса на логин с корректными данными"):
+            response = requests.post(Urls.MAIN_URL + Handlers.LOGIN, json=login_payload, headers=headers_json)
+
+        with allure.step("Проверка кода ответа"):
+            assert response.status_code == LoginResponses.success["status_code"]
+
+        with allure.step("Проверка тела ответа"):
+            body = response.json()
+            assert body.get("success") is LoginResponses.success["body"]["success"]
 
     @allure.title('Логин с неверным логином и паролем')
     def test_login_with_invalid_credentials(self):
-        login_payload = Helper.data_incorrect
-        response = requests.post(Urls.MAIN_URL + Handlers.LOGIN,json=login_payload,headers=Handlers.headers_json)
+        login_payload = UserData.data_incorrect
 
-        assert response.status_code == 401
-        body = response.json()
-        assert body.get("success") is False
-        assert body.get("message") == "email or password are incorrect"
+        with allure.step("Отправка POST-запроса на логин с некорректными данными"):
+            response = requests.post(Urls.MAIN_URL + Handlers.LOGIN, json=login_payload, headers=headers_json)
+
+        with allure.step("Проверка кода ответа"):
+            assert response.status_code == LoginResponses.invalid_credentials["status_code"]
+
+        with allure.step("Проверка тела ответа"):
+            body = response.json()
+            assert body.get("success") is LoginResponses.invalid_credentials["body"]["success"]
+            assert body.get("message") == LoginResponses.invalid_credentials["body"]["message"]

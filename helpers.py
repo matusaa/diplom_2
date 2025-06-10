@@ -1,6 +1,7 @@
 from faker import Faker
 import requests
-from config import Urls, Handlers
+from urls import Urls, Handlers
+from config import headers_json, headers_auth_json
 
 fake = Faker()
 
@@ -23,7 +24,7 @@ class Helper:
         response = requests.post(
             Urls.MAIN_URL + Handlers.CREATE_USER,
             json=user_data,
-            headers=Handlers.headers_json
+            headers=headers_json
         )
         return response
 
@@ -31,7 +32,7 @@ class Helper:
     def delete_user(access_token):
         response = requests.delete(
             Urls.MAIN_URL + Handlers.DELETE_USER,
-            headers=Handlers.headers_auth_json(access_token)
+            headers=headers_auth_json(access_token)
         )
         return response
 
@@ -41,23 +42,3 @@ class Helper:
         response.raise_for_status()
         data = response.json()
         return [item["_id"] for item in data["data"]]
-
-    data_without_email = {
-        "password": "123456",
-        "name": "Alex"
-    }
-
-    data_without_password = {
-        "email": "Alex19111@mail.ru",
-        "name": "Alex"
-    }
-
-    data_without_name = {
-        "email": "Alex19111@mail.ru",
-        "password": "123456"
-    }
-
-    data_incorrect = {
-        "email": 'Alexxx19111@mail.ru',
-        "password": "654321"
-    }
